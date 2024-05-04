@@ -9,10 +9,10 @@ def leer_archivo(input_file_path):
     m = int(f.readline()) # cantidad de links del sistema
     W = np.zeros(shape=(n,n)) #
     for _ in range(m):
-        line = f.readline()
-        i = int(line.split()[0]) - 1
-        j = int(line.split()[1]) - 1
-        W[j,i] = 1.0
+       line = f.readline()
+       i = int(line.split()[0]) - 1
+       j = int(line.split()[1]) - 1
+       W[j,i] = 1.0
     f.close()
 
     return W
@@ -109,27 +109,30 @@ def naveganteAleatorio(W, p):
 
 def factLU(A):
 
-    #Get the number of rows
-    n = A.shape[0]
-    m = A.shape[1]
+    m=A.shape[0]
+    n=A.shape[1]
+    Ac = A.copy()
 
     if m!=n:
-        raise ValueError("La matriz operada en la descomposicion LU no es cuadrada.")
-    
-    U = A.copy()
-    L = np.eye(n, dtype=np.double)
-    
-    #Loop over rows
-    for i in range(n):
-            
-        #Eliminate entries below i with row operations 
-        #on U and reverse the row operations to 
-        #manipulate L
-        factor = U[i+1:, i] / U[i, i]
-        L[i+1:, i] = factor
-        U[i+1:] -= factor[:, np.newaxis] * U[i]
-    
+        print('Matriz no cuadrada')
+        return
+
+    matriz_factores = np.zeros((n,n))  # lista que almacena las matrices factores
+
+    for j in range(n): # j = columna
+        factores = np.zeros((n,n))  # creo una matriz identidad del tamaño de A
+        for i in range(j+1, n): # i = fila
+            factores[i, j] = - Ac[i, j] / Ac[j, j]  # calcular el coeficiente factores para cada fila i
+            Ac[i, j:] += factores[i, j] * Ac[j, j:]  # aplicar la operación de eliminación gaussiana a la fila i
+        matriz_factores += factores  # agregar la matriz factores a la lista.
+
+    Ac -= matriz_factores
+
+    L = np.tril(Ac,-1) + np.eye(A.shape[0])
+    U = np.triu(Ac)
+
     return L, U
+
 
 def sort_rnk(arr):
   '''
@@ -165,35 +168,22 @@ def calcularRanking(M, p): # ingresa la matriz W de conectividad
     npages = M.shape[0]
     rnk = np.arange(0, npages) # ind{k] = i, la pagina k tienen el iesimo orden en la lista. estan ordenadas en base a la valoracion del ranking
     scr = np.zeros(npages) # scr[k] = alpha, la pagina k tiene un score de alpha. es el array R = WD
-
     R = matrizPuntajes(M)
-    print("M: \n", M)
-
     A = np.eye(npages) - p*R
-    print("A: \n", A)
-
-    # solo vale decir que b = e si γ = 1 (γ = z^T * x)
-    # faltaria implementarlo con el navegante aleatorio
     b = np.ones((npages, 1)) # vector columna e
-
     L, U = factLU(A)
-    print("LU: \n", L@U == A)
-    print("l: \n", L)
-    print("u: \n", U)
-
-    x = sp.linalg.solve_triangular(U,b) 
-    y = sp.linalg.solve_triangular(L,x, lower=True)
-
-    print("y(son los scores): \n", y)
-
+    y = sp.linalg.solve_triangular(L,b, lower=True)
+    x = sp.linalg.solve_triangular(U,y)
     indexAndScore = []
+    norma = sp.linalg.norm(x,1)
+    scr = x/norma
 
     for i in range(npages):
-       scr[i] += y[i] / npages
        indexAndScore.append((i, scr[i]))
 
     rnk = sort_rnk(indexAndScore)
 
+    print(rnk, scr)
     return rnk, scr
 
 def obtenerMaximoRankingScore(M, p):
@@ -204,3 +194,23 @@ def obtenerMaximoRankingScore(M, p):
 
     return output
 
+#ARCHIVOS DE ENTRADA
+archivo_test = './tests/test_dosestrellas.txt'
+
+#CARGA DE ARCHIVO EN GRAFO
+W = leer_archivo(archivo_test)
+
+dibujarGrafo(W, print_ejes=False)
+
+# defino la probabilidad de salto de continuar los links de la pagina actual
+p = 0.5
+# Realizo el test unitario para el calculo del mayor score, que pruebe que el codigo funciona correctamente.
+print('*'*50)
+print('Test unitario 1')
+try:
+    assert(np.isclose(obtenerMaximoRankingScore(W, p), 0.1811, atol=0.0001))
+except:
+    print('OUCH!! - No paso el test unitario')
+else:
+    print('BIEN! - Paso correctamente el test unitario')
+print('*'*50)
