@@ -177,49 +177,6 @@ def obtenerMaximoRankingScore(M, p):
 #                ANALISIS CUANTITATIVO DE DATOS               #
 #####################################
 
-p = 0.95
-
-"""def generar_grafo_aleatorio(num_nodos, num_enlaces):
-    G = nx.gnm_random_graph(num_nodos, num_enlaces)
-    return nx.adjacency_matrix(G).toarray()
-
-def medir_tiempos_de_ejecucion(tamaños_red, generar_grafo_func, p):
-    
-    tiempos_ejecucion = []
-
-    for tamaño in tamaños_red:
-        W = generar_grafo_func(tamaño, tamaño * 2)  # Por ejemplo, el doble de enlaces que de nodos
-        tiempo = calcular_tiempo_ejecucion(W, p)
-        tiempos_ejecucion.append(tiempo)
-
-    return tiempos_ejecucion
-
-# Definir rangos de tamaños de grafos y densidades
-tamaños_grafo =np.arange(5,10,5)  
-densidades = np.arange(0.1,0.5,0.1) 
-
-# Lista para almacenar los tiempos de ejecución
-tiempos_ejecucion = []
-
-# Generar grafos aleatorios y medir tiempos de ejecución para cada combinación de tamaño y densidad
-for tamaño in tamaños_grafo:
-    for densidad in densidades:
-        W = generar_grafo_aleatorio(tamaño, int(tamaño * densidad))
-        tiempo = calcular_tiempo_ejecucion(W, p)
-        tiempos_ejecucion.append(tiempo)
-
-# Representación gráfica de los tiempos de ejecución
-plt.figure(figsize=(40, 30))
-for i in range(len(tamaños_grafo)):
-    plt.plot(densidades, tiempos_ejecucion[i::len(tamaños_grafo)])
-    plt.scatter(densidades, tiempos_ejecucion[i::len(tamaños_grafo)], label=f"Tamaño del Grafo: {tamaños_grafo[i]}")
-plt.xlabel('Densidad del Grafo', size=15)
-plt.ylabel('Tiempo de Ejecución (segundos)', size=15)
-plt.title('Tiempo de Ejecución del Algoritmo de PageRank en función de la Densidad del Grafo')
-plt.legend()
-plt.grid(True, alpha=1)
-plt.show()
- """
 def tiempoEjecucion(W, p): 
     """Calcula el tiempo de ejecucion de obtenerMaximoRankingScore en segundos
 
@@ -230,93 +187,147 @@ def tiempoEjecucion(W, p):
     Returns:
         tiempo_ejecucion
     """    # calcula el tiempo de ejecucion de obtenerMaximoRankingScore 
-    inicio = time.time()
+    inicio = time.time() # inicia cronometro
     obtenerMaximoRankingScore(W, p)
-    fin = time.time()
+    fin = time.time() # termina cronometro
     tiempo_ejecucion = fin - inicio 
     
     return tiempo_ejecucion
 
-def tiempoEjecucionSize (n,p): 
+def tiempoEjecucionSize (dimension,p): 
     """Calcula el tiempo de ejecucion en base a la dimension de W
 
     Args:
-        n: dimensión de W
+        dimension: dimensión de W
         p: parametro del navegante aleatorio
 
     Returns:
         lista_tiempo: lista con los tiempos de ejecucion
         lista_size: lista de dimensiones paralelo a los tiempos de ejecucion
     """    
-    i=2
+    i=2 # hago que sea minimo 2x2
     lista_tiempo=[]
     lista_size=[]
-    while i <=n:
-        W= np.random.choice([0, 1], size=(i,i))
+    while i <= dimension:
+        W= np.random.choice([0, 1], size=(i,i)) # creo W con 
         np.fill_diagonal(W, 0)
         tiempo_ejecucion= tiempoEjecucion(W, p)
         lista_tiempo.append(tiempo_ejecucion)
         lista_size.append(i)
         i+=1
+
     return lista_tiempo, lista_size
 
-def tiempoEjecucionDensidad (n,p):
-    W=  np.zeros((n, n))
-    tiempo= tiempoEjecucion(W, p)
-    tiempos= []
-    nodos=[]
-    conexiones = 0
-    tiempos.append(tiempo)
-    nodos.append(conexiones)
-    for i in range (0,n):
-        for j in range (0,n):
-            if i!=j:
-                W[i][j]=1
-                tiempo= tiempoEjecucion(W, p)
-                tiempos.append(tiempo)
-                conexiones+=1
-                nodos.append(conexiones)
-    return tiempos, nodos
+def tiempoEjecucionDensidad (densidad_maxima,p,size):
+    """Calcula el tiempo de ejecucion en base a la densidad de W (densidad = links/nodos.)
 
-def graficarSize():
-    tamaño1, tiempo1= tiempoEjecucionSize(100, 0.5)
-    tamaño2, tiempo2= tiempoEjecucionSize(100, 0.25)
+    Args:
+        densidad_maxima: densidad máxima de W que se grafica
+        p: parametro del navegante aleatorio
+        size: dimension de W (matriz cuadrada size x size)
 
-    plt.scatter(tamaño1,tiempo1, color='seagreen', label='p=0.5')
-    plt.scatter(tamaño2, tiempo2, color='darkseagreen', label='p=0.25')
-    plt.plot(tamaño1,tiempo1, color='darkgreen', linestyle='-')
-    plt.plot(tamaño2, tiempo2, color='forestgreen', linestyle='-')
-    plt.xlabel('dimensiones del grafo ')
-    plt.ylabel('tiempo de ejecucion tardado [s]')
-    plt.title('Tiempo de ejecucion del calculo del rankingpage segun el tamaño del grafo')
+    Returns:
+        lista_tiempo: lista con los tiempos de ejecucion
+        lista_densidad: lista de densidades paralelo a los tiempos de ejecucion
+    """    
+    lista_tiempo = []
+    lista_densidad = []
+
+    for n in range(50, densidad_maxima * 50+1,50): # se elige 50 porque es un valor suficientemente alto para ver datos pero suficientemente bajo como para no romper la compu. igual cumple por lo explicado en notas. el valor de 50 es indifirente.
+        W = np.zeros((size, size), dtype=int)
+        np.fill_diagonal(W, 0)
+        indices = np.random.choice(size * size, n, replace=False) 
+        indices = np.unravel_index(indices, W.shape) # This line converts a flat index or array of flat indices into a tuple of coordinate arrays. Since we're dealing with a 2D array W, we use W.shape to specify its shape. This function essentially converts the flat indices obtained in the previous step into 2D indices that correspond to the positions in the original array W.
+        W[indices] = 1
+        tiempo_ejecucion= tiempoEjecucion(W, p)
+        lista_tiempo.append(tiempo_ejecucion)
+        lista_densidad.append(n/50)
+    
+    return lista_tiempo, lista_densidad
+    
+# Notas: el tiempo de ejecucion se mantiene constante si el tamaño de la matriz W es fijo. La densidad de W no afecta en absoluto al tiempo de ejecucion pues vale lo mismo peor con un error minimo tanto para densidad igual a 1 como para densidad igual a 100. Veo si con densidad fija pero tamaño variable cambia la cosa (deberia).
+
+def regresionLin(x, y):
+    slope, intercept, r, p, std_err = stats.linregress(x, y)   
+    return np.multiply(slope, x) + intercept # es necesario pues float * lista se arregla con np.multiply :D
+
+def graficarSize():    
+    for i in range(5):
+        lista_tiempo, lista_size = tiempoEjecucionSize(100, 0.5)
+
+    sns.set_style("darkgrid")
+    plt.scatter(lista_size,lista_tiempo, color='seagreen', label='p=0.5')
+    plt.plot(lista_size,lista_tiempo, color='darkgreen', linestyle='-')
+    plt.xlabel('Dimensiones de W')
+    plt.ylabel('Tiempo de Ejecucion (s)')
+    plt.title('Tiempo de ejecucion segun la Dimension de W')
     plt.legend()
     plt.grid(True)
     plt.show()
-    
 
-def graficarDensidad():
-    
-    tiempo, nodos= tiempoEjecucionDensidad (15,0.5)
-    
-    # Crear el gráfico de dispersión con múltiples conjuntos de datos
-    plt.scatter(nodos,tiempo, color='palevioletred', label='tamaño=15*15,p=0.5')
-    plt.xlabel('conexiones dentro del grafo ')
-    plt.ylabel('tiempo de ejecucion tardado [s]')
-    plt.title('Tiempo de ejecucion del calculo del rankingpage segun las conexiones entre paginas')
-    plt.legend()
+def graficarDensidadRegresion():
+    sns.set_style("darkgrid")
+    for i in range(10):
+        tiempo, densidad = tiempoEjecucionDensidad (50,0.5,50+i*10)
+        plt.scatter(densidad,tiempo,s=8, label=f'{50+i*10}x{50+i*10}')
+        regresion_lineal = regresionLin(densidad, tiempo)
+        plt.plot(densidad, regresion_lineal)
+
+    plt.xlabel('Densidad de W (cantidad de links/cantidad de nodos)')
+    plt.ylabel('Tiempo de Ejecucion (s)')
+    plt.title('Tiempo de Ejecucion en funcion a la Densidad de W')
+    plt.legend(fontsize='7')
     plt.grid(True)
     plt.show()    
 
+def graficarDensidadPlotError():
+    promedios_tiempo = []
+    errores_tiempo = []
+    densidades = []
 
-def graficarDensidad_2():
-    
-    tiempo4, nodos4= tiempoEjecucionDensidad (50,0.5)
-    plt.scatter(nodos4, tiempo4, color='mediumvioletred', label='tamaño=50*50,p=0.5')
-    
-    # Añadir etiquetas y leyenda
-    plt.xlabel('conexiones dentro del grafo ')
-    plt.ylabel('tiempo de ejecucion tardado [s]')
-    plt.title('Tiempo de ejecucion del calculo del rankingpage segun las conexiones entre paginas')
-    plt.legend()
+    for i in range(10):
+        tiempo, densidad = tiempoEjecucionDensidad(50, 0.5, 50+i*10)
+        promedios_tiempo.append(np.mean(tiempo))
+        errores_tiempo.append(np.std(tiempo))
+        densidades.append(50+i*10)
+
+    sns.set_style("darkgrid")
+    plt.errorbar(densidades, promedios_tiempo, yerr=errores_tiempo, fmt='o-', capsize=5)
+    plt.xlabel('Densidad')
+    plt.ylabel('Promedio de Tiempo')
+    plt.title('Promedio de Tiempo en Función de la Densidad con Barras de Error')
     plt.grid(True)
-    plt.show() 
+    plt.show()
+
+# nota: queda lindo pero cuando se pasa del umbral de 60 dimensiones es como que se va a la mierda, no se porque pero bueno, hecho está
+
+######### ANALISIS CUALITATIVO #########
+
+def calculoProbabilidadesRanking(W,p):
+    probabilidades = []
+    for i in range(p):
+        exit
+    ranking, scr =calcularRanking(W,p)
+    
+    return ranking, probabilidades
+
+def graficarProbabilidadesRanking():
+    """
+    Crea un gráfico de dispersión con líneas de contorno para visualizar la relación entre
+    el valor de p y las probabilidades de las páginas mejor rankeadas.
+
+    Argumentos:
+    - p_values: Una secuencia de valores de p.
+    - probabilidades: Una secuencia de probabilidades de las páginas mejor rankeadas correspondientes a los valores de p.
+    """
+    valor_p = np.linspace(0.01, 0.99, 99)
+    # Crear el gráfico de dispersión con líneas de contorno
+    sns.set_style(style="darkgrid")
+    plt.figure(figsize=(8, 6))
+    sns.regplot(x=valor_p, y=probabilidades, color='blue', scatter_kws={'s': 50}, line_kws={'color': 'red', 'linewidth': 2})
+    plt.xlabel('Valor de p')
+    plt.ylabel('Probabilidad de las páginas mejor rankeadas')
+    plt.title('Gráfico de dispersión con líneas de tendencia')
+    plt.show()
+
+
