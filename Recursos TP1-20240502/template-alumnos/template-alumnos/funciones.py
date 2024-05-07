@@ -3,6 +3,9 @@ import networkx as nx
 import scipy as sp
 import matplotlib.pyplot as plt
 import time
+import seaborn as sns
+from scipy import stats
+
 
 def leer_archivo(input_file_path):
 
