@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import time
 import seaborn as sns
 from scipy import stats
-
+from scipy import linalg
 
 def leer_archivo(input_file_path):
 
@@ -138,7 +138,6 @@ def factLU(A):
 
     return L, U
 
-
 def sort_rnk(arr):
   '''
   Ordena el array dado usando selection sort, es decir que recorre el arreglo buscando siempre el minimo y lo pone delante.
@@ -152,7 +151,6 @@ def sort_rnk(arr):
       Un nuevo arreglo ordenado.
 
   '''
-
   rnk = []
   while arr:
       max_score = arr[0][1]  # define el puntaje máximo como el puntaje del primer elemento de la lista
@@ -161,13 +159,9 @@ def sort_rnk(arr):
           if arr[i][1] > max_score:  # si el score es mayor actualiza index y score maximo
               max_score = arr[i][1]
               max_index = i
-      rnk.append(arr[max_index][0])  # agrega el índice del puntaje máximo a la lista de rangos
+      rnk.append((arr[max_index][0]) + 1)  # agrega el índice del puntaje máximo a la lista de rangos, suma 1 asi hace referencia al nodo, pues los indices van de 0 a npages -1
       del arr[max_index]  # elimina el elemento con el puntaje máximo de la lista
   return rnk
-
-
-
-
 
 def calcularRanking(M, p): # ingresa la matriz W de conectividad
     npages = M.shape[0]
@@ -188,7 +182,6 @@ def calcularRanking(M, p): # ingresa la matriz W de conectividad
 
     rnk = sort_rnk(indexAndScore)
 
-    print(rnk, scr)
     return rnk, scr
 
 def obtenerMaximoRankingScore(M, p):
