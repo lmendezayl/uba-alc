@@ -96,7 +96,7 @@ Estas soluciones **no son oficiales de la materia**. Las hice cuando cursaba la 
 Si te gustaria aportar tus propias soluciones, sentite comodo de forkear y hacer un PR. Tambien podes visitar el repo de mi amigo [Fausto Martinez](https://gitlab.com/faustomartinez/uba-algebra-lineal-computacional) :D.
 
 <p align="center">
-  <img src="./assets/goes_so_fucking_hard.jpg " alt="las putisimas cabras del algebra lineal moderno">
+  <img src="./assets/goes_so_fucking_hard.jpg " alt="las putisimas cabras del algebra lineal moderno" width="70%">
 </p>
 De izquierda a derecha, los padres del algebra lineal computacional:
 
